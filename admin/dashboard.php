@@ -7,13 +7,30 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
+$adminUser = $_SESSION['admin_username'] ?? 'unknown';
+
 try {
     $userCount     = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-    $questionCount = $pdo->query("SELECT COUNT(*) FROM questions")->fetchColumn();
-    $resultCount   = $pdo->query("SELECT COUNT(*) FROM quiz_results")->fetchColumn();
-    $topicCount    = $pdo->query("SELECT COUNT(DISTINCT topic) FROM questions")->fetchColumn();
+    $questionCount = $pdo->prepare("SELECT COUNT(*) FROM questions WHERE admin_username = ?");
+    $questionCount->execute([$adminUser]);
+    $questionCount = $questionCount->fetchColumn();
+
+    $testCount = $pdo->prepare("SELECT COUNT(*) FROM tests WHERE admin_username = ?");
+    $testCount->execute([$adminUser]);
+    $testCount = $testCount->fetchColumn();
+
+    $topicCount = $pdo->prepare("SELECT COUNT(DISTINCT topic) FROM questions WHERE admin_username = ?");
+    $topicCount->execute([$adminUser]);
+    $topicCount = $topicCount->fetchColumn();
+
+    $resultCount = $pdo->prepare("
+        SELECT COUNT(*) FROM test_results tr
+        INNER JOIN tests t ON tr.test_code = t.test_code AND t.admin_username = ?
+    ");
+    $resultCount->execute([$adminUser]);
+    $resultCount = $resultCount->fetchColumn();
 } catch (PDOException $e) {
-    $userCount = $questionCount = $resultCount = $topicCount = 0;
+    $userCount = $questionCount = $resultCount = $topicCount = $testCount = 0;
 }
 ?>
 <!DOCTYPE html>

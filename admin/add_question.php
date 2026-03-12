@@ -9,7 +9,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $message = '';
 $error   = '';
-$activeTab = 'form'; // track which tab was active on POST
+$activeTab = 'form';
+$adminUser = $_SESSION['admin_username'] ?? 'unknown'; // data isolation by admin
 
 // ── Handle Form Submission ──
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -27,10 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($topic && $question && $opt_a && $opt_b && $opt_c && $opt_d && $correct_answer !== '') {
             try {
                 $stmt = $pdo->prepare(
-                    "INSERT INTO questions (topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO questions (admin_username, topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                 );
-                $stmt->execute([$topic, $question, $opt_a, $opt_b, $opt_c, $opt_d, (int)$correct_answer]);
+                $stmt->execute([$adminUser, $topic, $question, $opt_a, $opt_b, $opt_c, $opt_d, (int)$correct_answer]);
                 $message = "✓ Question added to topic: <strong>" . htmlspecialchars($topic) . "</strong>";
             } catch (PDOException $e) {
                 $error = "Database error: " . $e->getMessage();
@@ -64,10 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($answer_index !== false) {
                             try {
                                 $stmt = $pdo->prepare(
-                                    "INSERT INTO questions (topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?)"
+                                    "INSERT INTO questions (admin_username, topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                                 );
                                 $stmt->execute([
+                                    $adminUser,
                                     $topic,
                                     $q['question'],
                                     $q['options'][0],

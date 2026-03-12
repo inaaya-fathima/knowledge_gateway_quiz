@@ -9,12 +9,14 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $message = '';
 $error   = '';
+$adminUser = $_SESSION['admin_username'] ?? 'unknown'; // row-level tenancy
 
 // ── Handle Delete Single Question ──
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $idToDelete = (int)$_GET['delete'];
     try {
-        $pdo->prepare("DELETE FROM questions WHERE id = ?")->execute([$idToDelete]);
+        // Only delete if this admin owns the question
+        $pdo->prepare("DELETE FROM questions WHERE id = ? AND admin_username = ?")->execute([$idToDelete, $adminUser]);
         $message = "Question #$idToDelete deleted successfully.";
     } catch (PDOException $e) {
         $error = "Failed to delete question: " . $e->getMessage();
@@ -25,8 +27,8 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 if (isset($_GET['delete_topic']) && !empty($_GET['delete_topic'])) {
     $topicToDelete = trim($_GET['delete_topic']);
     try {
-        $stmt = $pdo->prepare("DELETE FROM questions WHERE topic = ?");
-        $stmt->execute([$topicToDelete]);
+        $stmt = $pdo->prepare("DELETE FROM questions WHERE topic = ? AND admin_username = ?");
+        $stmt->execute([$topicToDelete, $adminUser]);
         $deleted = $stmt->rowCount();
         $message = "Topic \"" . htmlspecialchars($topicToDelete) . "\" and all $deleted question(s) deleted.";
     } catch (PDOException $e) {
@@ -36,7 +38,9 @@ if (isset($_GET['delete_topic']) && !empty($_GET['delete_topic'])) {
 
 // ── Fetch topic stats ──
 try {
-    $topicStats = $pdo->query("SELECT topic, COUNT(*) as count FROM questions GROUP BY topic ORDER BY topic ASC")->fetchAll();
+    $topicStats = $pdo->prepare("SELECT topic, COUNT(*) as count FROM questions WHERE admin_username = ? GROUP BY topic ORDER BY topic ASC");
+    $topicStats->execute([$adminUser]);
+    $topicStats = $topicStats->fetchAll();
 } catch (PDOException $e) {
     die("Error fetching stats: " . $e->getMessage());
 }
@@ -47,13 +51,14 @@ $searchQ     = trim($_GET['search_q']     ?? '');
 
 try {
     if (!empty($filterTopic)) {
-        $stmt = $pdo->prepare("SELECT * FROM questions WHERE topic = ? ORDER BY id DESC");
-        $stmt->execute([$filterTopic]);
+        $stmt = $pdo->prepare("SELECT * FROM questions WHERE admin_username = ? AND topic = ? ORDER BY id DESC");
+        $stmt->execute([$adminUser, $filterTopic]);
     } elseif (!empty($searchQ)) {
-        $stmt = $pdo->prepare("SELECT * FROM questions WHERE question LIKE ? OR topic LIKE ? ORDER BY topic ASC, id DESC");
-        $stmt->execute(['%' . $searchQ . '%', '%' . $searchQ . '%']);
+        $stmt = $pdo->prepare("SELECT * FROM questions WHERE admin_username = ? AND (question LIKE ? OR topic LIKE ?) ORDER BY topic ASC, id DESC");
+        $stmt->execute([$adminUser, '%' . $searchQ . '%', '%' . $searchQ . '%']);
     } else {
-        $stmt = $pdo->query("SELECT * FROM questions ORDER BY topic ASC, id DESC");
+        $stmt = $pdo->prepare("SELECT * FROM questions WHERE admin_username = ? ORDER BY topic ASC, id DESC");
+        $stmt->execute([$adminUser]);
     }
     $questions = $stmt->fetchAll();
 } catch (PDOException $e) {

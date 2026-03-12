@@ -11,6 +11,7 @@ $message   = '';
 $error     = '';
 $activeTab = 'form';
 $testCode  = '';
+$adminUser = $_SESSION['admin_username'] ?? 'unknown'; // row-level tenancy
 
 // ── Helper: generate unique test code ──────────────────────
 function generateTestCode(PDO $pdo, int $length = 6): string {
@@ -44,10 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($topic && $question && $opt_a && $opt_b && $opt_c && $opt_d && $correct_answer !== '') {
             try {
                 $stmt = $pdo->prepare(
-                    "INSERT INTO test_questions (topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO test_questions (admin_username, topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                 );
-                $stmt->execute([$topic, $question, $opt_a, $opt_b, $opt_c, $opt_d, (int)$correct_answer]);
+                $stmt->execute([$adminUser, $topic, $question, $opt_a, $opt_b, $opt_c, $opt_d, (int)$correct_answer]);
                 $message = "✓ Official test question added to topic: <strong>" . htmlspecialchars($topic) . "</strong>";
             } catch (PDOException $e) {
                 $error = "Database error: " . $e->getMessage();
@@ -80,10 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($answer_index !== false) {
                             try {
                                 $stmt = $pdo->prepare(
-                                    "INSERT INTO test_questions (topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?)"
+                                    "INSERT INTO test_questions (admin_username, topic, question, opt_a, opt_b, opt_c, opt_d, correct_answer)
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                                 );
                                 $stmt->execute([
+                                    $adminUser,
                                     $topic,
                                     $q['question'],
                                     $q['options'][0],
@@ -123,20 +125,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($num_questions < 1) {
             $error = "Number of questions must be at least 1.";
         } else {
-            // Check available count from the OFFICIAL test question pool
-            $countStmt = $pdo->prepare("SELECT COUNT(*) FROM test_questions WHERE topic = ?");
-            $countStmt->execute([$topic]);
+            // Check available count from THIS admin's official test question pool
+            $countStmt = $pdo->prepare("SELECT COUNT(*) FROM test_questions WHERE admin_username = ? AND topic = ?");
+            $countStmt->execute([$adminUser, $topic]);
             $available = (int)$countStmt->fetchColumn();
 
             if ($num_questions > $available) {
-                $error = "Only $available question(s) exist in the official test pool for this topic. Add more official questions first.";
+                $error = "Only $available question(s) in your test pool for this topic. Add more official questions first.";
             } else {
                 try {
                     $testCode = generateTestCode($pdo);
                     $stmt = $pdo->prepare(
-                        "INSERT INTO tests (test_code, topic, num_questions, time_limit) VALUES (?, ?, ?, ?)"
+                        "INSERT INTO tests (admin_username, test_code, topic, num_questions, time_limit) VALUES (?, ?, ?, ?, ?)"
                     );
-                    $stmt->execute([$testCode, $topic, $num_questions, $time_limit]);
+                    $stmt->execute([$adminUser, $testCode, $topic, $num_questions, $time_limit]);
                     $message = "Test room created! Share the code with your students.";
                 } catch (PDOException $e) {
                     $error = "Failed to create test room: " . $e->getMessage();
@@ -146,11 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ── Fetch topics for test room dropdown (from test_questions only) ──
+// Fetch topics for this admin's test room dropdown only
 try {
-    $topics = $pdo->query(
-        "SELECT topic, COUNT(*) as cnt FROM test_questions GROUP BY topic ORDER BY topic ASC"
-    )->fetchAll();
+    $tq = $pdo->prepare(
+        "SELECT topic, COUNT(*) as cnt FROM test_questions WHERE admin_username = ? GROUP BY topic ORDER BY topic ASC"
+    );
+    $tq->execute([$adminUser]);
+    $topics = $tq->fetchAll();
 } catch (PDOException $e) {
     $topics = [];
 }

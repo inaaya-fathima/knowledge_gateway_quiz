@@ -181,6 +181,15 @@ try {
             <p>Choose any topic, set your own optional timer, and practice at your own pace. No pressure!</p>
             <div class="arrow">Browse Topics →</div>
         </a>
+
+        <!-- Leaderboard -->
+        <a href="leaderboard.php" class="hub-card" id="leaderboard-card"
+           style="border-color: rgba(255,193,7,0.2); background: linear-gradient(135deg, var(--card-bg), rgba(255,193,7,0.04));">
+            <div class="card-icon">🏆</div>
+            <h3>Leaderboard</h3>
+            <p>See how you rank against your classmates. Earn more stars to climb to the top!</p>
+            <div class="arrow" style="color:#ffc107;">View Rankings →</div>
+        </a>
     </div>
 
     <!-- Stats + Recent -->

@@ -7,19 +7,32 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
-// Try both tables for results
+$adminUser = $_SESSION['admin_username'] ?? 'unknown';
+
+// Show only results for THIS admin's tests
 $results = [];
 try {
-    $results = $pdo->query("SELECT student_name, test_code, topic, score, total_questions, attempt_date FROM test_results ORDER BY attempt_date DESC")->fetchAll();
+    $stmt = $pdo->prepare("
+        SELECT tr.student_name, tr.test_code, tr.topic, tr.score, tr.total_questions, tr.attempt_date
+        FROM test_results tr
+        INNER JOIN tests t ON tr.test_code = t.test_code AND t.admin_username = ?
+        ORDER BY tr.attempt_date DESC
+    ");
+    $stmt->execute([$adminUser]);
+    $results = $stmt->fetchAll();
 } catch (PDOException $e) {
-    // Try quiz_results joined with users
+    // Fallback: join with quiz_results filtered by admin's topics
     try {
-        $results = $pdo->query("
-            SELECT u.name AS student_name, '' AS test_code, '' AS topic, qr.score, qr.total_questions, qr.attempt_date
+        $stmt = $pdo->prepare("
+            SELECT u.name AS student_name, '' AS test_code, q.topic AS topic,
+                   qr.score, qr.total_questions, qr.attempt_date
             FROM quiz_results qr
             LEFT JOIN users u ON qr.user_id = u.id
+            LEFT JOIN questions q ON q.admin_username = ?
             ORDER BY qr.attempt_date DESC
-        ")->fetchAll();
+        ");
+        $stmt->execute([$adminUser]);
+        $results = $stmt->fetchAll();
     } catch (PDOException $e2) {
         $results = [];
     }
