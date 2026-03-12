@@ -1,0 +1,102 @@
+[
+    {
+        "question": "What does PHP stand for?",
+        "options": [
+            "Personal Home Page",
+            "Private Home Page",
+            "PHP Hypertext Preprocessor",
+            "Programming Home Page"
+        ],
+        "answer": 2
+    },
+    {
+        "question": "PHP is mainly used for?",
+        "options": [
+            "Frontend development",
+            "Database design",
+            "Server-side scripting",
+            "Operating systems"
+        ],
+        "answer": 2
+    },
+    {
+        "question": "Which symbol is used to start a variable in PHP?",
+        "options": [
+            "#",
+            "$",
+            "@",
+            "&"
+        ],
+        "answer": 1
+    },
+    {
+        "question": "Which function is used to display output in PHP?",
+        "options": [
+            "print()",
+            "echo",
+            "display()",
+            "show()"
+        ],
+        "answer": 1
+    },
+    {
+        "question": "Which extension is used for PHP files?",
+        "options": [
+            ".php",
+            ".ph",
+            ".phtml",
+            ".html"
+        ],
+        "answer": 0
+    },
+    {
+        "question": "PHP code is executed on?",
+        "options": [
+            "Client browser",
+            "Server",
+            "Database",
+            "Compiler"
+        ],
+        "answer": 1
+    },
+    {
+        "question": "Which symbol is used to end a statement in PHP?",
+        "options": [
+            ":",
+            ";",
+            ".",
+            ","
+        ],
+        "answer": 1
+    },
+    {
+        "question": "Which function is used to get data from a form using the GET method?",
+        "options": [
+            "$_GET",
+            "$_POST",
+            "$_REQUEST",
+            "$_FORM"
+        ],
+        "answer": 0
+    },
+    {
+        "question": "Which of the following is a PHP loop?",
+        "options": [
+            "repeat",
+            "for",
+            "iterate",
+            "loop"
+        ],
+        "answer": 1
+    },
+    {
+        "question": "Which function is used to connect PHP with MySQL?",
+        "options": [
+            "connect_mysql()",
+            "mysql_connect()",
+            "mysqli_connect()",
+            "db_connect()"
+        ],
+        "answer": 2
+    }
+]

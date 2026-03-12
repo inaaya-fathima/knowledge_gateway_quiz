@@ -1,0 +1,102 @@
+[
+    {
+        "question": "What is Python?",
+        "options": [
+            "A programming language",
+            "A snake species",
+            "A web browser",
+            "An operating system"
+        ],
+        "answer": 0
+    },
+    {
+        "question": "Who created Python?",
+        "options": [
+            "Dennis Ritchie",
+            "James Gosling",
+            "Guido van Rossum",
+            "Bjarne Stroustrup"
+        ],
+        "answer": 2
+    },
+    {
+        "question": "Which symbol is used for single-line comments in Python?",
+        "options": [
+            "\/\/",
+            "#",
+            "\/* *\/",
+            "--"
+        ],
+        "answer": 1
+    },
+    {
+        "question": "Which function is used to print output in Python?",
+        "options": [
+            "echo()",
+            "display()",
+            "print()",
+            "show()"
+        ],
+        "answer": 2
+    },
+    {
+        "question": "Which function is used to take user input in Python?",
+        "options": [
+            "scan()",
+            "input()",
+            "read()",
+            "get()"
+        ],
+        "answer": 1
+    },
+    {
+        "question": "What is the correct extension of Python files?",
+        "options": [
+            ".pt",
+            ".pyt",
+            ".py",
+            ".python"
+        ],
+        "answer": 2
+    },
+    {
+        "question": "Which keyword is used to define a function in Python?",
+        "options": [
+            "function",
+            "define",
+            "def",
+            "func"
+        ],
+        "answer": 2
+    },
+    {
+        "question": "Which data type is used to store text in Python?",
+        "options": [
+            "int",
+            "float",
+            "str",
+            "bool"
+        ],
+        "answer": 2
+    },
+    {
+        "question": "Which of the following is a Python loop?",
+        "options": [
+            "for",
+            "repeat",
+            "loop",
+            "iterate"
+        ],
+        "answer": 0
+    },
+    {
+        "question": "Python is which type of language?",
+        "options": [
+            "Compiled language",
+            "Interpreted language",
+            "Machine language",
+            "Assembly language"
+        ],
+        "answer": 1
+    }
+]
