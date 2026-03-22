@@ -82,6 +82,95 @@ run($pdo, "ALTER TABLE questions ADD COLUMN IF NOT EXISTS `topic` varchar(100) N
 // ── 7. Ensure foreign key doesn't break things (soft ignore) ──
 // We skip strict FK enforcement to keep things flexible
 
+// ── 8. contacts table ──
+run($pdo, "CREATE TABLE IF NOT EXISTS `contacts` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) NOT NULL,
+    `message` text NOT NULL,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", "contacts table", $steps, $errors);
+
+// ── 9. communications (user requests) ──
+run($pdo, "CREATE TABLE IF NOT EXISTS `communication_requests` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `sender_id` int(11) NOT NULL,
+    `receiver_id` int(11) NOT NULL,
+    `status` enum('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", "communication_requests table", $steps, $errors);
+
+// ── 10. messages ──
+run($pdo, "CREATE TABLE IF NOT EXISTS `messages` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `sender_id` int(11) NOT NULL,
+    `sender_type` varchar(10) NOT NULL DEFAULT 'user',
+    `receiver_id` int(11) NOT NULL,
+    `receiver_type` varchar(10) NOT NULL DEFAULT 'user',
+    `message` text NOT NULL,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", "messages table", $steps, $errors);
+
+// ── 11. notifications ──
+run($pdo, "CREATE TABLE IF NOT EXISTS `notifications` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) NOT NULL,
+    `type` varchar(20) NOT NULL DEFAULT 'system',
+    `message` text NOT NULL,
+    `is_read` tinyint(1) NOT NULL DEFAULT 0,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", "notifications table", $steps, $errors);
+
+// ── 12. Add is_ended to tests ──
+run($pdo, "ALTER TABLE `tests` ADD COLUMN IF NOT EXISTS `is_ended` tinyint(1) NOT NULL DEFAULT 0;", "tests.is_ended column", $steps, $errors);
+
+// ── 13. test_detailed_results ──
+run($pdo, "CREATE TABLE IF NOT EXISTS `test_detailed_results` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `test_result_id` int(11) NOT NULL,
+    `question_id` int(11) NOT NULL,
+    `student_answer` varchar(255) DEFAULT NULL,
+    `is_correct` tinyint(1) NOT NULL DEFAULT 0,
+    `time_taken` int(11) NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `test_result_id` (`test_result_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", "test_detailed_results table", $steps, $errors);
+
+// ── 14. Add status to contacts ──
+run($pdo, "ALTER TABLE `contacts` ADD COLUMN IF NOT EXISTS `status` ENUM('pending', 'completed') NOT NULL DEFAULT 'pending';", "contacts.status column", $steps, $errors);
+
+// ── 15. practice_results ──
+run($pdo, "CREATE TABLE IF NOT EXISTS `practice_results` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_id` int(11) NOT NULL,
+    `student_name` varchar(100) NOT NULL,
+    `topic` varchar(100) NOT NULL,
+    `score` int(11) NOT NULL,
+    `total_questions` int(11) NOT NULL,
+    `time_taken` int(11) NOT NULL DEFAULT 0,
+    `practice_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", "practice_results table", $steps, $errors);
+
+// ── 16. official_requests ──
+run($pdo, "CREATE TABLE IF NOT EXISTS `official_requests` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `username` varchar(100) NOT NULL,
+    `name` varchar(100) NOT NULL,
+    `dob` varchar(50) NOT NULL,
+    `address` text NOT NULL,
+    `mobile` varchar(20) NOT NULL,
+    `email` varchar(100) NOT NULL,
+    `institution` varchar(100) NOT NULL,
+    `status` enum('pending','completed') NOT NULL DEFAULT 'pending',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", "official_requests table", $steps, $errors);
+
 $total = count($steps);
 $errCount = count($errors);
 ?>

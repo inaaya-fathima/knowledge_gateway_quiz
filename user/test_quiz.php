@@ -88,10 +88,11 @@ foreach ($raw as $rq) $qMap[$rq['id']] = $rq;
                 <div class="options">
                     <?php foreach ($opts as $oi => $opt_text): ?>
                         <label>
-                            <input type="radio" name="answers[<?php echo $qid; ?>]" value="<?php echo $oi; ?>" required>
+                            <input type="radio" class="q-radio" name="answers[<?php echo $qid; ?>]" value="<?php echo $oi; ?>" required>
                             <span><?php echo $labels[$oi]; ?>)&nbsp;<?php echo htmlspecialchars($opt_text); ?></span>
                         </label>
                     <?php endforeach; ?>
+                    <input type="hidden" name="time_taken[<?php echo $qid; ?>]" value="0" id="time_taken_<?php echo $qid; ?>">
                 </div>
             </div>
         <?php endforeach; ?>
@@ -138,5 +139,27 @@ foreach ($raw as $rq) $qMap[$rq['id']] = $rq;
     updateTimer();
 </script>
 <?php endif; ?>
+<script>
+    var lastActionTime = Date.now();
+    var firstAction = true;
+    
+    document.querySelectorAll('.q-radio').forEach(function(radio) {
+        radio.addEventListener('change', function(e) {
+            var now = Date.now();
+            var qidMatch = e.target.name.match(/\[(\d+)\]/);
+            if(qidMatch && qidMatch[1]) {
+                var qid = qidMatch[1];
+                var diff = Math.round((now - lastActionTime) / 1000);
+                
+                // If they took a really long time before the first click, just attribute up to say 5 minutes, or true diff
+                var timeInput = document.getElementById('time_taken_' + qid);
+                if(timeInput) {
+                    timeInput.value = parseInt(timeInput.value) + diff;
+                }
+            }
+            lastActionTime = now;
+        });
+    });
+</script>
 </body>
 </html>

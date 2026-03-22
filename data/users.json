@@ -1,23 +1,23 @@
 {
     "users": [
         {
-            "username": "user",
+            "username": "inaaya",
             "password": "$2y$12$OaRb7mjbq4ZpKnIMmWcB1OGcqrVxGPoBo5\/EMJ8RBOcAR9P1.tO8K",
             "role": "user",
             "created_at": "2026-03-07 20:45:15",
             "db_id": "1",
             "name": "user",
             "streak_days": 1,
-            "last_active_day": "2026-03-12",
-            "stars": 28
+            "last_active_day": "2026-03-22",
+            "stars": 48
         },
         {
             "username": "user1",
             "password": "$2y$12$8XzqaKs1htyMxum36CyZcu0spGyFF.iZ8PRnmAwjLSBB0C0PxQ9mO",
             "role": "user",
             "created_at": "2026-03-12 05:51:09",
-            "stars": 2,
-            "last_active_day": "2026-03-12",
+            "stars": 13,
+            "last_active_day": "2026-03-22",
             "streak_days": 1,
             "db_id": "2",
             "name": "user1"
@@ -30,13 +30,7 @@
             "role": "admin",
             "created_at": "2026-03-07 20:42:14",
             "streak_days": 1,
-            "last_active_day": "2026-03-12"
-        },
-        {
-            "username": "admin_new",
-            "password": "$2y$10$s1wn4QUxn0KA\/CTB5iI7OOqlqLkqallQxD9OSfI0o.iVdLxKhxGUa",
-            "role": "admin",
-            "created_at": "2026-03-08 18:52:23"
+            "last_active_day": "2026-03-22"
         },
         {
             "username": "admin1",
@@ -44,8 +38,18 @@
             "role": "admin",
             "created_at": "2026-03-12 05:49:34",
             "stars": 0,
-            "last_active_day": "2026-03-12",
+            "last_active_day": "2026-03-17",
             "streak_days": 1
+        }
+    ],
+    "officials": [
+        {
+            "username": "official",
+            "password": "$2y$12$iUF2QMz.qnktF\/B\/APwj0uQ4Mwa5QOQ9ObggOpj2MNMewq3Wj8pya",
+            "role": "official",
+            "created_at": "2026-03-14 13:28:59",
+            "streak_days": 1,
+            "last_active_day": "2026-03-22"
         }
     ]
 }

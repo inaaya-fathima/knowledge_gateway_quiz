@@ -1,5 +1,14 @@
 <?php
 session_start();
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+if (isset($_SESSION['user_id'])) {
+    header("Location: dashboard.php");
+    exit;
+}
+
 require_once '../config/db.php';
 require_once '../config/auth_helper.php';
 
@@ -12,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($username) && !empty($password)) {
         $user = authenticate_json_user($username, $password, 'user');
         if ($user !== false) {
+            session_regenerate_id(true);
             $_SESSION['user_id']   = $user['db_id'];
             $_SESSION['user_name'] = $user['name'];
             header("Location: dashboard.php");
@@ -249,6 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-footer">
                 <p>Don't have an account? <a href="signup.php">Register here</a></p>
+                <p style="margin-top: 10px;"><a href="forget_password.php" style="color: var(--text-muted); font-size: 0.9em;">Forgot Password?</a></p>
             </div>
         </div>
 

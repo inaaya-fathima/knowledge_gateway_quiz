@@ -1,5 +1,10 @@
 <?php
 session_start();
+// Prevent caching to guarantee fresh session loads
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 require_once '../config/db.php';
 require_once '../config/auth_helper.php';
 
@@ -138,10 +143,54 @@ try {
         .pct-mid  { color: #f39c12; }
         .pct-low  { color: var(--red-bright); }
 
-        @media (max-width: 600px) {
+        /* Hamburger Menu Styling */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 2em;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
             .hub-grid { grid-template-columns: 1fr; }
             .stats-small { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-            .top-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .top-bar { 
+                flex-direction: row; 
+                flex-wrap: wrap; 
+                align-items: center; 
+            }
+            .greeting { flex: 1; }
+            
+            .hamburger-btn { display: block; }
+            
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                margin-top: 15px;
+                gap: 5px;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                padding: 10px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                animation: slideDownFade 0.3s ease-out;
+            }
+            .nav-links.show { display: flex; }
+            .nav-links .btn { width: 100%; text-align: left; padding: 12px 16px; margin: 0; }
+        }
+        
+        @keyframes slideDownFade {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -154,13 +203,22 @@ try {
             <h2>Hello, <?php echo htmlspecialchars($_SESSION['user_name']); ?> 👋</h2>
             <p>What would you like to do today?</p>
         </div>
+        
+        <button class="hamburger-btn" onclick="document.getElementById('navLinks').classList.toggle('show')">☰</button>
+        
         <div class="top-actions">
             <!-- Star badge -->
-            <div class="star-badge" id="star-badge">
+            <div class="star-badge" id="star-badge" style="margin-right: 10px;">
                 <span class="star-icon">⭐</span>
                 <span><?php echo $stars; ?> Stars</span>
             </div>
-            <a href="../admin/logout.php" class="btn" style="padding: 8px 16px; font-size:0.85em;">Logout</a>
+        </div>
+        
+        <div class="nav-links" id="navLinks">
+            <a href="profile.php" class="btn" style="font-size:0.85em;">👤 Profile</a>
+            <a href="notifications.php" class="btn" style="font-size:0.85em;">🔔 Notifications</a>
+            <a href="change_password.php" class="btn" style="font-size:0.85em;">⚙️ Settings</a>
+            <a href="logout.php" class="btn" style="font-size:0.85em;">Logout</a>
         </div>
     </div>
 
@@ -189,6 +247,14 @@ try {
             <h3>Leaderboard</h3>
             <p>See how you rank against your classmates. Earn more stars to climb to the top!</p>
             <div class="arrow" style="color:#ffc107;">View Rankings →</div>
+        </a>
+
+        <!-- Contact Admin -->
+        <a href="contact.php" class="hub-card" style="border-color: rgba(52,152,219,0.2); background: linear-gradient(135deg, var(--card-bg), rgba(52,152,219,0.04));">
+            <div class="card-icon">📧</div>
+            <h3>Contact Admin</h3>
+            <p>Send a message, request, or feedback to the administrators directly.</p>
+            <div class="arrow" style="color:#3498db;">Send Message →</div>
         </a>
     </div>
 
@@ -246,6 +312,17 @@ try {
         </div>
     <?php endif; ?>
 
+    <div style="margin-top: 50px; text-align: center; border-top: 1px solid var(--border); padding-top: 20px; padding-bottom: 30px;">
+        <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">Site Navigation</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; font-size: 0.85em;">
+            <a href="dashboard.php" style="color: var(--primary);">Home Dashboard</a> |
+            <a href="change_password.php" style="color: var(--primary);">Change Password</a> |
+            <a href="change_password.php" style="color: var(--primary);">Change Name</a> |
+            <a href="change_password.php" style="color: var(--primary);">Change Username</a> |
+            <a href="change_password.php" style="color: var(--red-bright);">Delete Account</a> |
+            <a href="logout.php" style="color: var(--primary);">Logout</a>
+        </div>
+    </div>
 </div>
 </body>
 </html>

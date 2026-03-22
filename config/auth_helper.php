@@ -11,7 +11,15 @@ if (!file_exists(USERS_JSON_PATH)) {
     }
     file_put_contents(USERS_JSON_PATH, json_encode([
         'users'  => [],
-        'admins' => []
+        'admins' => [],
+        'officials' => [
+            [
+                'username' => 'official',
+                'password' => password_hash('official123', PASSWORD_BCRYPT, ['cost' => 12]),
+                'role' => 'official',
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ]
     ], JSON_PRETTY_PRINT));
 }
 
@@ -68,7 +76,9 @@ function password_strength_score(string $password): int {
 // ── Read / Write helpers ───────────────────────────────────────
 function get_all_users(): array {
     $json = file_get_contents(USERS_JSON_PATH);
-    return json_decode($json, true) ?: ['users' => [], 'admins' => []];
+    $data = json_decode($json, true) ?: ['users' => [], 'admins' => [], 'officials' => []];
+    if (!isset($data['officials'])) $data['officials'] = [];
+    return $data;
 }
 
 function save_all_users(array $data): bool {
@@ -85,7 +95,7 @@ function save_all_users(array $data): bool {
  */
 function register_json_user(string $username, string $password, string $role = 'user', array $extraData = []): bool {
     $data     = get_all_users();
-    $category = ($role === 'admin') ? 'admins' : 'users';
+    $category = ($role === 'admin') ? 'admins' : (($role === 'official') ? 'officials' : 'users');
 
     // Case-insensitive username uniqueness check
     foreach ($data[$category] as $user) {
@@ -113,7 +123,7 @@ function register_json_user(string $username, string $password, string $role = '
  */
 function authenticate_json_user(string $username, string $password, string $role = 'user') {
     $data     = get_all_users();
-    $category = ($role === 'admin') ? 'admins' : 'users';
+    $category = ($role === 'admin') ? 'admins' : (($role === 'official') ? 'officials' : 'users');
 
     foreach ($data[$category] as &$user) {
         if (strtolower($user['username']) !== strtolower($username)) continue;
@@ -195,5 +205,82 @@ function get_user_streak(int $db_id): int {
         }
     }
     return 0;
+}
+
+/**
+ * Change user password.
+ */
+function change_password_json_user(int $db_id, string $new_password, string $role = 'user'): bool {
+    $data = get_all_users();
+    $category = ($role === 'admin') ? 'admins' : 'users';
+
+    foreach ($data[$category] as &$u) {
+        if (isset($u['db_id']) && (int)$u['db_id'] === $db_id) {
+            $u['password'] = password_hash($new_password, PASSWORD_BCRYPT, ['cost' => PW_BCRYPT_COST]);
+            return save_all_users($data);
+        }
+    }
+    return false;
+}
+
+/**
+ * Check old user password.
+ */
+function verify_old_password_json_user(int $db_id, string $old_password, string $role = 'user'): bool {
+    $data = get_all_users();
+    $category = ($role === 'admin') ? 'admins' : 'users';
+
+    foreach ($data[$category] as $u) {
+        if (isset($u['db_id']) && (int)$u['db_id'] === $db_id) {
+            return password_verify($old_password, $u['password']);
+        }
+    }
+    return false;
+}
+
+/**
+ * Delete user account.
+ */
+function delete_json_user(int $db_id, string $role = 'user'): bool {
+    $data = get_all_users();
+    $category = ($role === 'admin') ? 'admins' : 'users';
+
+    $newData = [];
+    $found = false;
+    foreach ($data[$category] as $u) {
+        if (isset($u['db_id']) && (int)$u['db_id'] === $db_id) {
+            $found = true;
+            continue; // Skip the user to delete
+        }
+        $newData[] = $u;
+    }
+    if ($found) {
+        $data[$category] = $newData;
+        return save_all_users($data);
+    }
+    return false;
+}
+
+/**
+ * Change username in JSON
+ */
+function change_username_json_user(int $db_id, string $new_username, string $role = 'user'): bool {
+    $data = get_all_users();
+    $category = ($role === 'admin') ? 'admins' : 'users';
+
+    // check uniqueness
+    foreach ($data[$category] as $u) {
+        if (strtolower($u['username']) === strtolower($new_username)) {
+            if (!isset($u['db_id']) || (int)$u['db_id'] !== $db_id) return false;
+        }
+    }
+
+    foreach ($data[$category] as &$u) {
+        if (isset($u['db_id']) && (int)$u['db_id'] === $db_id) {
+            $u['username'] = $new_username;
+            return save_all_users($data);
+        }
+    }
+    return false;
 }
 ?>

@@ -183,7 +183,8 @@
 
         <p class="footer-note">
             New here? Start with the <a href="user/signup.php">student registration</a> &nbsp;|&nbsp;
-            First time? <a href="intro.php">Watch intro again</a>
+            First time? <a href="intro.php">Watch intro again</a><br><br>
+            <a href="official/login.php" style="opacity: 0.5; font-size: 0.85em;">System Official? Login here</a>
         </p>
     </div>
 </body>

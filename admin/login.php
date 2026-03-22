@@ -1,5 +1,9 @@
 <?php
 session_start();
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 require_once '../config/db.php';
 require_once '../config/auth_helper.php';
 
@@ -17,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($username) && !empty($password)) {
         $admin = authenticate_json_user($username, $password, 'admin');
         if ($admin !== false) {
+            session_regenerate_id(true);
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_username'] = $admin['username'];
             header("Location: dashboard.php");
@@ -144,9 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </form>
 
-            <div class="form-footer">
-                <p>New Administrator? <a href="signup.php">Create an account</a></p>
-            </div>
+            <!-- Admin Signup removed, Officials create admins -->
         </div>
 
         <!-- Illustration side (RIGHT) — admin/teacher/instructor themed -->

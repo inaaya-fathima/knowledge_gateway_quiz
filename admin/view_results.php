@@ -9,17 +9,32 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $adminUser = $_SESSION['admin_username'] ?? 'unknown';
 
+$filterUser = $_GET['student_name'] ?? '';
+
 // Show only results for THIS admin's tests
 $results = [];
 try {
-    $stmt = $pdo->prepare("
-        SELECT tr.student_name, tr.test_code, tr.topic, tr.score, tr.total_questions, tr.attempt_date
-        FROM test_results tr
-        INNER JOIN tests t ON tr.test_code = t.test_code AND t.admin_username = ?
-        ORDER BY tr.attempt_date DESC
-    ");
-    $stmt->execute([$adminUser]);
+    $sql = "SELECT tr.id as tr_id, tr.student_name, tr.test_code, tr.topic, tr.score, tr.total_questions, tr.attempt_date
+            FROM test_results tr
+            INNER JOIN tests t ON tr.test_code = t.test_code AND t.admin_username = ?";
+    $params = [$adminUser];
+    
+    if ($filterUser !== '') {
+        $sql .= " WHERE tr.student_name = ?";
+        $params[] = $filterUser;
+    }
+    
+    $sql .= " ORDER BY tr.attempt_date DESC";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $results = $stmt->fetchAll();
+    
+    // Get unique student names for the filter dropdown
+    $stmtUsers = $pdo->prepare("SELECT DISTINCT tr.student_name FROM test_results tr INNER JOIN tests t ON tr.test_code = t.test_code AND t.admin_username = ? ORDER BY tr.student_name ASC");
+    $stmtUsers->execute([$adminUser]);
+    $uniqueUsers = $stmtUsers->fetchAll(PDO::FETCH_COLUMN);
+    
 } catch (PDOException $e) {
     // Fallback: join with quiz_results filtered by admin's topics
     try {
@@ -72,10 +87,24 @@ try {
         <a href="dashboard.php" class="back-link">← Dashboard</a>
     </div>
 
+    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+        <form method="GET" style="display: flex; gap: 10px; margin: 0;">
+            <select name="student_name" style="padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                <option value="">All Students</option>
+                <?php foreach($uniqueUsers as $u): ?>
+                    <option value="<?php echo htmlspecialchars($u); ?>" <?php echo $filterUser === $u ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($u); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit" class="btn submit-btn" style="padding: 10px 16px;">Filter Profile</button>
+        </form>
+    </div>
+
     <?php if (empty($results)): ?>
         <div class="empty-state">
             <div class="empty-icon">📊</div>
-            <p style="color:var(--text-muted);">No test results yet. Results will appear here once students complete tests.</p>
+            <p style="color:var(--text-muted);">No test results found for the selected criteria.</p>
         </div>
     <?php else: ?>
         <div style="overflow-x: auto;" class="glass-card" style="padding:0;">
@@ -88,6 +117,7 @@ try {
                         <th>Score</th>
                         <th>Result</th>
                         <th>Date</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,6 +144,11 @@ try {
                             <td><?php echo $r['score']; ?> / <?php echo $r['total_questions']; ?></td>
                             <td><span class="pct-badge <?php echo $pctClass; ?>"><?php echo $pct; ?>%</span></td>
                             <td style="color:var(--text-muted); font-size:0.85em;"><?php echo date('M j, Y g:i a', strtotime($r['attempt_date'])); ?></td>
+                            <td>
+                                <?php if (!empty($r['tr_id'])): ?>
+                                    <a href="view_detailed_result.php?id=<?php echo $r['tr_id']; ?>" class="btn" style="padding:4px 10px; font-size:0.8em;">View Details</a>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
